@@ -30,7 +30,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          unityVersion: 2022.3.33f1
+          unityVersion: 2022.3.11f1
 
       # 2) EditMode テスト
       - name: Run EditMode tests
@@ -38,7 +38,7 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          unityVersion: 2022.3.33f1
+          unityVersion: 2022.3.11f1
           testMode: EditMode
           projectPath: DevProject
 

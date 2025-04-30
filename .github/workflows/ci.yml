@@ -1,0 +1,101 @@
+# ================================================
+# Unity LLM Gather — minimal CI for UPM package
+# ================================================
+# ▶ ゴール
+#   1) PR / push 時に EditMode テスト＆WebGL ビルドを実行
+#   2) .ulf ベースの Personal ライセンスで自動アクティベート（*unity-activate* Step は不要）
+#   3) 成果物として WebGL ビルドと UPM tarball を保存
+#
+# ▼ 必要 Secrets
+#   * UNITY_LICENSE : Unity Hub で取得した .ulf を Base64 変換した文字列
+#   * (Pro の場合のみ) UNITY_EMAIL / UNITY_PASSWORD / UNITY_SERIAL
+# ------------------------------------------------
+
+name: Unity Package CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  # ──────────────────────────────────────────────
+  # 1️⃣  EditMode テスト & WebGL ビルド
+  # ──────────────────────────────────────────────
+  test-build:
+    name: Test & Build (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ❶ Unity Library キャッシュ
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: DevProject/Library
+          key: Library-DevProject-${{ runner.os }}-${{ hashFiles('DevProject/Assets/**', 'Packages/com.toagihouse.unityllmgather/**') }}
+          restore-keys: Library-DevProject-${{ runner.os }}-
+
+      # ❷ EditMode テスト (ライセンス自動アクティベートを含む)
+      - name: Run EditMode tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          unityVersion: 6000.0.47f1
+          testMode: EditMode
+          projectPath: DevProject
+
+      # ❸ WebGL ビルド
+      - name: Build WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          unityVersion: 6000.0.47f1
+          targetPlatform: WebGL
+          projectPath: DevProject
+
+      # ❹ テスト結果 & ビルド成果物をアップロード
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: TestResults
+          path: test-results
+
+      - name: Upload WebGL build
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: WebGL-build
+          path: build/WebGL
+
+  # ──────────────────────────────────────────────
+  # 2️⃣  UPM パッケージ整合性チェック
+  # ──────────────────────────────────────────────
+  package-verification:
+    name: Verify & Pack UPM
+    runs-on: ubuntu-latest
+    needs: test-build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pack UPM
+        working-directory: Packages/com.toagihouse.unityllmgather
+        run: npm pack --silent
+
+      - name: Upload UPM tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: unityllmgather-upm
+          path: Packages/com.toagihouse.unityllmgather/*.tgz

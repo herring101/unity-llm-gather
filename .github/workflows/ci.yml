@@ -62,14 +62,14 @@ jobs:
       # ❹ テスト結果 & ビルド成果物をアップロード
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TestResults
           path: test-results
 
       - name: Upload WebGL build
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: WebGL-build
           path: build/WebGL
@@ -95,7 +95,7 @@ jobs:
         run: npm pack --silent
 
       - name: Upload UPM tarball
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unityllmgather-upm
           path: Packages/com.toagihouse.unityllmgather/*.tgz

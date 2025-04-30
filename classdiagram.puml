@@ -1,0 +1,107 @@
+@startuml Unity LLM Gather 2.0
+title Unity LLM Gather 2.0 — Refined Class Diagram (Drop / Full / Outline)
+
+'────────────── ENUM ──────────────
+' TreeOnly は enum には載せず、Mode==null で表現
+enum GatherMode {
+  Drop      ' 完全除外
+  Full      ' 全文収集
+  Outline   ' Docstring＋public シグネチャ
+}
+
+'────────────── ドメイン ──────────────
+class FileMeta {
+  +string Path
+  +long   SizeBytes
+  +bool   IsBinary
+  +GatherMode? Mode      ' null → TreeOnly (fallback)
+  +int    EstimatedTokens
+}
+
+'────────────── 設定 ──────────────
+class PatternProfile {
+  +List<string> Drop
+  +List<string> Full
+  +List<string> Outline
+}
+
+class GatherSettings {
+  +int  TokenBudget
+  +bool SceneAutoInclude
+  +PatternProfile Patterns
+  +static GatherSettings Load()
+  +void Save()
+}
+
+'────────────── パス判定 ──────────────
+interface IPathMatcher {
+  +bool Match(string pattern, string path)
+}
+class GlobPathMatcher implements IPathMatcher
+class RegexPathMatcher implements IPathMatcher
+
+'────────────── スキャナ & シーン解析 ──────────────
+class Scanner {
+  -IPathMatcher _matcher
+  +IEnumerable<FileMeta> Scan(string rootDir)
+}
+
+class SceneAnalyzer {
+  +IEnumerable<string> GetScriptGuidsInActiveScene()
+}
+
+'────────────── トークンプランナー ──────────────
+class TokenEstimator {
+  +int Estimate(string text)
+}
+
+class SelectionPlanner {
+  -int            _budget
+  -TokenEstimator _estimator
+  +IEnumerable<FileMeta> Plan(IEnumerable<FileMeta> allFiles)
+}
+
+'────────────── 抽出器 ──────────────
+interface IContentExtractor {
+  +string Extract(FileMeta meta)
+}
+class FullExtractor    implements IContentExtractor
+class OutlineExtractor implements IContentExtractor
+' TreeOnly (fallback) は ContentWriter が直書きするため抽出器なし
+
+'────────────── 出力 ──────────────
+class ContentWriter {
+  +void Write(StreamWriter sw, IEnumerable<FileMeta> files)
+}
+
+'────────────── ファサード ──────────────
+class GatherPipeline {
+  -Scanner          _scanner
+  -SceneAnalyzer    _scene
+  -SelectionPlanner _planner
+  -ContentWriter    _writer
+  +void Execute(string rootDir, string outPath)
+}
+
+'────────────── UI ──────────────
+namespace UnityEditor {
+  class GatherWindow <<EditorWindow>> {
+    -GatherSettings _settings
+    +void OnGUI()
+    +void OnGenerateButton()
+  }
+}
+
+'────────────── リレーション ──────────────
+GatherSettings  "1" o-- "1" PatternProfile
+Scanner         --> IPathMatcher
+SelectionPlanner--> TokenEstimator
+SelectionPlanner--> FileMeta
+ContentWriter   --> IContentExtractor
+GatherPipeline  --> Scanner
+GatherPipeline  --> SceneAnalyzer
+GatherPipeline  --> SelectionPlanner
+GatherPipeline  --> ContentWriter
+GatherWindow    --> GatherPipeline
+GatherWindow    --> GatherSettings
+@enduml

@@ -2,40 +2,30 @@ name: unity-package-ci
 
 on:
   push:
-    branches: [main, develop] # 適宜変更
+    branches: [main, develop]
   pull_request:
     branches: [develop]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 40
 
     steps:
       - uses: actions/checkout@v4
 
-      # 1️⃣ Personal ライセンスをオンライン発行（ULF を outputs で受け取る）
-      - name: Activate Unity
-        uses: game-ci/unity-activate@v2
-        id: activate
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          unityVersion: 2022.3.11f1
-          imageVersion: 2.0 # ← linux-il2cpp-2.0 が存在するタグ
-
-      # 2️⃣ EditMode テスト
+      # 1️⃣ EditMode テスト
       - name: Run EditMode tests
         uses: game-ci/unity-test-runner@v4
         env:
-          UNITY_LICENSE: ${{ steps.activate.outputs.unityLicense }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          unityVersion: 2022.3.11f1
+          unityVersion: 2022.3.11f1 # Editor 本体
           projectPath: DevProject
           testMode: EditMode
-          containerRegistryImageVersion: 2.0 # ← 同じ 2.0 を指定
+          customImage: unityci/editor:2022.3.11f1-linux-il2cpp-2.0 # ← 実在タグ
 
+      # 2️⃣ テスト結果を保存
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4

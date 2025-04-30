@@ -1,0 +1,21 @@
+{
+  "name": "com.toagihouse.unityllmgather",
+  "displayName": "Unity LLM Gather",
+  "version": "0.2.0",
+  "unity": "2022.3",
+  "description": "Gathers project files and active scene summary into a single text file for LLM input.",
+  "type": "library",
+  "author": {
+    "name": "herring101",
+    "url": "https://toagihouse.com"
+  },
+  "licensesUrl": "LICENSE.md",
+  "documentationUrl": "README.md",
+  "keywords": [
+    "LLM",
+    "Editor",
+    "Utility",
+    "AI"
+  ],
+  "dependencies": {}
+}

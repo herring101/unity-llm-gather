@@ -1,0 +1,10 @@
+{
+  "name": "UnityLLMGather.Editor",
+  "references": [
+    "UnityLLMGather.Core"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

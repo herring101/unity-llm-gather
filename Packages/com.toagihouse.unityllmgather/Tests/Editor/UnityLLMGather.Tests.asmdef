@@ -1,0 +1,14 @@
+{
+  "name": "UnityLLMGather.Tests",
+  "references": [
+    "UnityLLMGather.Core",
+    "UnityLLMGather.Editor",
+    "nunit.framework"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

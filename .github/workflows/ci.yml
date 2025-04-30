@@ -2,7 +2,7 @@ name: unity-package-ci
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop] # 適宜変更
   pull_request:
     branches: [develop]
 
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1️⃣ ライセンスをオンライン発行 → Base64 化して出力
+      # 1️⃣ Personal ライセンスをオンライン発行（ULF を outputs で受け取る）
       - name: Activate Unity
         uses: game-ci/unity-activate@v2
         id: activate
@@ -23,9 +23,9 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: 2022.3.11f1
-          customImage: unityci/editor:2022.3.11f1-linux-il2cpp-2.0
+          imageVersion: 2.0 # ← linux-il2cpp-2.0 が存在するタグ
 
-      # 2️⃣ EditMode テスト（ライセンスは前ステップの outputs を利用）
+      # 2️⃣ EditMode テスト
       - name: Run EditMode tests
         uses: game-ci/unity-test-runner@v4
         env:
@@ -34,7 +34,7 @@ jobs:
           unityVersion: 2022.3.11f1
           projectPath: DevProject
           testMode: EditMode
-          customImage: unityci/editor:2022.3.11f1-linux-il2cpp-2.0
+          containerRegistryImageVersion: 2.0 # ← 同じ 2.0 を指定
 
       - name: Upload Test Results
         if: always()

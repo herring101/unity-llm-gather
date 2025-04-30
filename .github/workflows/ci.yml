@@ -1,10 +1,9 @@
 # ================================================
 # Unity LLM Gather — CI for UPM Editor Extension
 # ================================================
-# 2025-04-30 版
 # * EditMode テストのみ（ビルド無し）
-# * .ulf + Unity アカウントで確実にライセンスアクティベート
-# * UPM パッケージを npm pack→アーティファクト
+# * Unity 6000.0.47f1 でライセンスアクティベート
+# * UPM パッケージを npm pack → アーティファクト
 # ------------------------------------------------
 
 name: unity-package-ci
@@ -23,19 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ---------------------------
-      # 1) Unity ライセンスアクティベート
-      # ---------------------------
+      # 1) Unity ライセンスアクティベート（Unity 6000.0.47f1）
       - name: Activate Unity
         uses: game-ci/unity-activate@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: 6000.0.47f1
 
-      # ---------------------------
       # 2) EditMode テスト
-      # ---------------------------
       - name: Run EditMode tests
         uses: game-ci/unity-test-runner@v4
         env:
